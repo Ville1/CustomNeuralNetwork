@@ -44,6 +44,9 @@ namespace CustomNeuralNetwork
 
 
             Console.WriteLine(" Ready!");
+            TestResults results = Analytics.Test(network, learningData);
+            Console.WriteLine(string.Format("Success rate: {0}% ({1}/{2})", (int)(results.SuccessRate * 100.0f), results.SuccessfulTests, results.TotalTests));
+
             Test(network);
 
             //Network.Save(network, "C:\\Users\\Ville\\Documents\\Test\\test.json");
