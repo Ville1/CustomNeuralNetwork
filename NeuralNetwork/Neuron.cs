@@ -1,4 +1,4 @@
-﻿using NeuralNetwork.Utils;
+﻿using NeuralNetwork.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +9,7 @@ namespace NeuralNetwork
     {
         public enum NeuronType { Input, Hidden, Output }
 
-        private static int currentId = 0;
-
-        public int Id { get; private set; }
+        public long Id { get; private set; }
         public List<Connection> Connections { get; private set; }
         public float? Output { get; private set; }
         public Network Network { get; private set; }
@@ -29,8 +27,15 @@ namespace NeuralNetwork
 
         public Neuron(Network network)
         {
-            Id = currentId;
-            currentId++;
+            Id = network.NeuronCurrentId;
+            Connections = new List<Connection>();
+            Output = null;
+            Network = network;
+        }
+
+        public Neuron(Network network, NeuronSaveData data)
+        {
+            Id = data.Id;
             Connections = new List<Connection>();
             Output = null;
             Network = network;

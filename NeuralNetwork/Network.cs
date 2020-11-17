@@ -2,6 +2,9 @@
 using NeuralNetwork.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace NeuralNetwork
 {
@@ -15,7 +18,14 @@ namespace NeuralNetwork
         private List<LearningData> learningData;
         private int learningDataRepeats;
         private int learningDataCycle;
+        private long neuronCurrentId;
+        private long connectionCurrentId;
+
         public ActivationFunctionType ActivationFunctionType { get; private set; }
+        public long NeuronCurrentId { get { long value = neuronCurrentId; neuronCurrentId++; return value; } }
+        public long ConnectionCurrentId { get { long value = connectionCurrentId; connectionCurrentId++; return value; } }
+
+        private Network() { }
 
         public Network(int inputCount, int hiddenWidth, int layers, int outputCount, float learningRate, ActivationFunctionType activationFunctionType)
         {
@@ -24,6 +34,8 @@ namespace NeuralNetwork
             learningData = null;
             learningDataRepeats = 0;
             learningDataCycle = 0;
+            neuronCurrentId = 0;
+            connectionCurrentId = 0;
 
             for (int i = 0; i < inputCount; i++) {
                 inputs.Add(new Neuron(this));
@@ -209,6 +221,50 @@ namespace NeuralNetwork
             }
 
             return new Output(result);
+        }
+
+        public static void Save(Network network, string file)
+        {
+            NetworkSaveData data = new NetworkSaveData() {
+                ActivationFunctionType = (int)network.ActivationFunctionType,
+                NeuronCurrentId = network.NeuronCurrentId,
+                ConnectionCurrentId = network.ConnectionCurrentId,
+                Inputs = network.inputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
+                Hidden = network.hidden.Select(x => x.Select(y => new NeuronSaveData() { Id = y.Id }).ToList()).ToList(),
+                Output = network.outputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
+                Connections = network.connections.Select(x => new ConnectionSaveData() { Id = x.Id, InId = x.In.Id, OutId = x.Out.Id, Weight = x.Weight }).ToList()
+            };
+            try {
+                File.WriteAllText(file, JsonConvert.SerializeObject(data, Formatting.None));
+            } catch (Exception exception) {
+                //TODO: Logging?
+                throw exception;
+            }
+        }
+
+        public static Network Load(string file)
+        {
+            NetworkSaveData data = null;
+            try {
+                data = JsonConvert.DeserializeObject<NetworkSaveData>(File.ReadAllText(file));
+            } catch (Exception exception) {
+                //TODO: Logging?
+                throw exception;
+            }
+            Network network = new Network();
+            network.ActivationFunctionType = (ActivationFunctionType)data.ActivationFunctionType;
+            network.neuronCurrentId = data.NeuronCurrentId;
+            network.connectionCurrentId = data.ConnectionCurrentId;
+            network.inputs = data.Inputs.Select(x => new Neuron(network, x)).ToList();
+            network.hidden = data.Hidden.Select(x => x.Select(y => new Neuron(network, y)).ToList()).ToList();
+            network.outputs = data.Output.Select(x => new Neuron(network, x)).ToList();
+            List<Neuron> all = network.inputs.Select(x => x).ToList();
+            foreach(List<Neuron> column in network.hidden) {
+                all.AddRange(column);
+            }
+            all.AddRange(network.outputs);
+            network.connections = data.Connections.Select(x => new Connection(all.First(y => y.Id == x.InId), all.First(y => y.Id == x.OutId), x)).ToList();
+            return network;
         }
     }
 }

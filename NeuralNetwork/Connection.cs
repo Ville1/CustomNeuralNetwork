@@ -1,23 +1,32 @@
-﻿namespace NeuralNetwork
+﻿using NeuralNetwork.Data;
+
+namespace NeuralNetwork
 {
     public class Connection
     {
-        private static int currentId = 0;
-
-        public int Id { get; private set; }
+        public long Id { get; private set; }
         public Neuron In { get; private set; }
         public Neuron Out { get; private set; }
         public float Weight { get; set; }
 
         public Connection(Neuron inP, Neuron outP, float weight)
         {
-            Id = currentId;
-            currentId++;
+            Id = inP.Network.ConnectionCurrentId;
             In = inP;
             Out = outP;
             In.Connections.Add(this);
             Out.Connections.Add(this);
             Weight = weight;
+        }
+
+        public Connection(Neuron inP, Neuron outP, ConnectionSaveData data)
+        {
+            Id = data.Id;
+            In = inP;
+            Out = outP;
+            In.Connections.Add(this);
+            Out.Connections.Add(this);
+            Weight = data.Weight;
         }
     }
 }

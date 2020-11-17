@@ -45,6 +45,11 @@ namespace CustomNeuralNetwork
 
             Console.WriteLine(" Ready!");
             Test(network);
+
+            //Network.Save(network, "C:\\Users\\Ville\\Documents\\Test\\test.json");
+
+            /*Network fromFile = Network.Load("C:\\Users\\Ville\\Documents\\Test\\test.json");
+            Test(fromFile);*/
         }
 
         private static void Test(Network network)
