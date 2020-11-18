@@ -10,20 +10,20 @@ namespace NeuralNetwork
 {
     public class Network
     {
-        private List<Neuron> inputs = new List<Neuron>();
-        private List<List<Neuron>> hidden = new List<List<Neuron>>();
-        private List<Neuron> outputs = new List<Neuron>();
-        private List<Connection> connections = new List<Connection>();
+        public List<Neuron> Inputs { get; private set; }
+        public List<List<Neuron>> Hidden { get; private set; }
+        public List<Neuron> Outputs { get; private set; }
+        public List<Connection> Connections { get; private set; }
+        public ActivationFunctionType ActivationFunctionType { get; private set; }
+        public long NeuronCurrentId { get { long value = neuronCurrentId; neuronCurrentId++; return value; } }
+        public long ConnectionCurrentId { get { long value = connectionCurrentId; connectionCurrentId++; return value; } }
+
         private float learningRate;
         private List<LearningData> learningData;
         private int learningDataRepeats;
         private int learningDataCycle;
         private long neuronCurrentId;
         private long connectionCurrentId;
-
-        public ActivationFunctionType ActivationFunctionType { get; private set; }
-        public long NeuronCurrentId { get { long value = neuronCurrentId; neuronCurrentId++; return value; } }
-        public long ConnectionCurrentId { get { long value = connectionCurrentId; connectionCurrentId++; return value; } }
 
         private Network() { }
 
@@ -37,47 +37,52 @@ namespace NeuralNetwork
             neuronCurrentId = 0;
             connectionCurrentId = 0;
 
+            Inputs = new List<Neuron>();
+            Hidden = new List<List<Neuron>>();
+            Outputs = new List<Neuron>();
+            Connections = new List<Connection>();
+
             for (int i = 0; i < inputCount; i++) {
-                inputs.Add(new Neuron(this));
+                Inputs.Add(new Neuron(this));
             }
 
             for (int i = 0; i < layers; i++) {
-                hidden.Add(new List<Neuron>());
+                Hidden.Add(new List<Neuron>());
                 for (int j = 0; j < hiddenWidth; j++) {
                     Neuron neuron = new Neuron(this);
-                    hidden[i].Add(neuron);
+                    Hidden[i].Add(neuron);
                 }
             }
-            hidden.Add(new List<Neuron>());
+            Hidden.Add(new List<Neuron>());
             for (int i = 0; i < outputCount; i++) {
-                hidden[hidden.Count - 1].Add(new Neuron(this));
+                Hidden[Hidden.Count - 1].Add(new Neuron(this));
             }
 
             Random rng = new Random();
-            foreach (Neuron input in inputs) {
-                foreach (Neuron layer0 in hidden[0]) {
+            foreach (Neuron input in Inputs) {
+                foreach (Neuron layer0 in Hidden[0]) {
                     Connection connection = new Connection(input, layer0, rng.Next(100) * 0.01f);
-                    connections.Add(connection);
+                    Connections.Add(connection);
                 }
             }
 
             List<Neuron> previousLayer = null;
-            foreach (List<Neuron> layer in hidden) {
+            foreach (List<Neuron> layer in Hidden) {
                 if (previousLayer != null) {
                     foreach (Neuron neuron in layer) {
                         foreach (Neuron previous in previousLayer) {
                             Connection connection = new Connection(previous, neuron, rng.Next(100) * 0.01f);
-                            connections.Add(connection);
+                            Connections.Add(connection);
                         }
                     }
                 }
                 previousLayer = layer;
             }
 
-            foreach (Neuron neuron in hidden[hidden.Count - 1]) {
-                outputs.Add(neuron);
+            foreach (Neuron neuron in Hidden[Hidden.Count - 1]) {
+                Outputs.Add(neuron);
             }
-            hidden.RemoveAt(hidden.Count - 1);
+            Hidden.RemoveAt(Hidden.Count - 1);
         }
 
         public float ActivationFunction(float input)
@@ -139,11 +144,11 @@ namespace NeuralNetwork
 
         public void Teach(List<float> inputValues, List<float> expectedOutputs)
         {
-            if (inputValues.Count != inputs.Count) {
-                throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, inputs.Count));
+            if (inputValues.Count != Inputs.Count) {
+                throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, Inputs.Count));
             }
-            if (expectedOutputs.Count != outputs.Count) {
-                throw new ArgumentException(string.Format("Invalid number of output values, {0} was given while {1} expected", inputValues.Count, inputs.Count));
+            if (expectedOutputs.Count != Outputs.Count) {
+                throw new ArgumentException(string.Format("Invalid number of output values, {0} was given while {1} expected", inputValues.Count, Inputs.Count));
             }
 
             List<float> results = Process(inputValues).RawValues;
@@ -160,12 +165,12 @@ namespace NeuralNetwork
 
             //Calculate errors
             Dictionary<Neuron, float> errors = new Dictionary<Neuron, float>();
-            for (int i = 0; i < outputs.Count; i++) {
-                float error = (expectedOutputs[i] - outputs[i].Output.Value) * ActivationFunctionDerivate(outputs[i].Output.Value);
-                errors.Add(outputs[i], error);
+            for (int i = 0; i < Outputs.Count; i++) {
+                float error = (expectedOutputs[i] - Outputs[i].Output.Value) * ActivationFunctionDerivate(Outputs[i].Output.Value);
+                errors.Add(Outputs[i], error);
             }
-            for (int layerIndex = hidden.Count - 1; layerIndex >= 0; layerIndex--) {
-                List<Neuron> layer = hidden[layerIndex];
+            for (int layerIndex = Hidden.Count - 1; layerIndex >= 0; layerIndex--) {
+                List<Neuron> layer = Hidden[layerIndex];
                 foreach (Neuron neuron in layer) {
                     float error = 0.0f;
                     foreach (Connection connection in neuron.Connections) {
@@ -178,7 +183,7 @@ namespace NeuralNetwork
             }
 
             //Update weights
-            foreach (Connection connection in connections) {
+            foreach (Connection connection in Connections) {
                 connection.Weight = connection.Weight + (learningRate * errors[connection.Out] * connection.In.Output.Value);
             }
         }
@@ -195,8 +200,8 @@ namespace NeuralNetwork
 
         public Output Process(List<float> inputValues)
         {
-            if (inputValues.Count != inputs.Count) {
-                throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, inputs.Count));
+            if (inputValues.Count != Inputs.Count) {
+                throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, Inputs.Count));
             }
             foreach(float inputValue in inputValues) {
                 if(inputValue < 0.0f || inputValue > 1.0f) {
@@ -205,17 +210,17 @@ namespace NeuralNetwork
             }
 
             for (int i = 0; i < inputValues.Count; i++) {
-                inputs[i].Process(inputValues[i]);
+                Inputs[i].Process(inputValues[i]);
             }
 
-            foreach (List<Neuron> layer in hidden) {
+            foreach (List<Neuron> layer in Hidden) {
                 foreach (Neuron neuron in layer) {
                     neuron.Process();
                 }
             }
 
             List<float> result = new List<float>();
-            foreach (Neuron neuron in outputs) {
+            foreach (Neuron neuron in Outputs) {
                 neuron.Process();
                 result.Add(neuron.Output.Value);
             }
@@ -229,10 +234,10 @@ namespace NeuralNetwork
                 ActivationFunctionType = (int)network.ActivationFunctionType,
                 NeuronCurrentId = network.NeuronCurrentId,
                 ConnectionCurrentId = network.ConnectionCurrentId,
-                Inputs = network.inputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
-                Hidden = network.hidden.Select(x => x.Select(y => new NeuronSaveData() { Id = y.Id }).ToList()).ToList(),
-                Output = network.outputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
-                Connections = network.connections.Select(x => new ConnectionSaveData() { Id = x.Id, InId = x.In.Id, OutId = x.Out.Id, Weight = x.Weight }).ToList()
+                Inputs = network.Inputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
+                Hidden = network.Hidden.Select(x => x.Select(y => new NeuronSaveData() { Id = y.Id }).ToList()).ToList(),
+                Output = network.Outputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
+                Connections = network.Connections.Select(x => new ConnectionSaveData() { Id = x.Id, InId = x.In.Id, OutId = x.Out.Id, Weight = x.Weight }).ToList()
             };
             try {
                 File.WriteAllText(file, JsonConvert.SerializeObject(data, Formatting.None));
@@ -255,15 +260,15 @@ namespace NeuralNetwork
             network.ActivationFunctionType = (ActivationFunctionType)data.ActivationFunctionType;
             network.neuronCurrentId = data.NeuronCurrentId;
             network.connectionCurrentId = data.ConnectionCurrentId;
-            network.inputs = data.Inputs.Select(x => new Neuron(network, x)).ToList();
-            network.hidden = data.Hidden.Select(x => x.Select(y => new Neuron(network, y)).ToList()).ToList();
-            network.outputs = data.Output.Select(x => new Neuron(network, x)).ToList();
-            List<Neuron> all = network.inputs.Select(x => x).ToList();
-            foreach(List<Neuron> column in network.hidden) {
+            network.Inputs = data.Inputs.Select(x => new Neuron(network, x)).ToList();
+            network.Hidden = data.Hidden.Select(x => x.Select(y => new Neuron(network, y)).ToList()).ToList();
+            network.Outputs = data.Output.Select(x => new Neuron(network, x)).ToList();
+            List<Neuron> all = network.Inputs.Select(x => x).ToList();
+            foreach(List<Neuron> column in network.Hidden) {
                 all.AddRange(column);
             }
-            all.AddRange(network.outputs);
-            network.connections = data.Connections.Select(x => new Connection(all.First(y => y.Id == x.InId), all.First(y => y.Id == x.OutId), x)).ToList();
+            all.AddRange(network.Outputs);
+            network.Connections = data.Connections.Select(x => new Connection(all.First(y => y.Id == x.InId), all.First(y => y.Id == x.OutId), x)).ToList();
             return network;
         }
     }

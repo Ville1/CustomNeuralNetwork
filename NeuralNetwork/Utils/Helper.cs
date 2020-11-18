@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NeuralNetwork.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,7 +16,7 @@ namespace NeuralNetwork.Utils
             return clone;
         }
 
-        public static List<bool> ToBitList(int integer, int bitsCount)
+        public static Bits ToBits(int integer, int bitsCount)
         {
             string bits = Convert.ToString(integer, 2).PadLeft(bitsCount, '0');
             if (bits.Length > bitsCount) {
@@ -25,13 +26,13 @@ namespace NeuralNetwork.Utils
             for (int i = 0; i < bits.Length; i++) {
                 list.Add(bits[i] == '1');
             }
-            return list;
+            return new Bits(list);
         }
 
-        public static int IntFromBitList(List<bool> list)
+        public static int IntFromBits(Bits bits)
         {
             StringBuilder builder = new StringBuilder();
-            foreach(bool bit in list) {
+            foreach(bool bit in bits.RawValues) {
                 builder.Append(bit ? "1" : "0");
             }
             return Convert.ToInt32(builder.ToString(), 2);
