@@ -9,7 +9,7 @@ namespace NeuralNetwork
         {
             TestResults testResults = new TestResults();
             foreach (LearningData learningData in data) {
-                Output output = network.Process(learningData.Input);
+                NetworkData output = network.Process(learningData.Input);
                 bool success = true;
                 for(int i = 0; i < output.RawValues.Count; i++) {
                     if (bitTest && output.BitValues[i] != learningData.ExpectedOutput.BitValues[i]) {

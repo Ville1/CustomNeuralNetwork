@@ -142,7 +142,12 @@ namespace NeuralNetwork
             }
         }
 
-        public void Teach(List<float> inputValues, List<float> expectedOutputs)
+        public NetworkData Teach(LearningData data)
+        {
+            return Teach(data.Input.RawValues, data.ExpectedOutput.RawValues);
+        }
+
+        public NetworkData Teach(List<float> inputValues, List<float> expectedOutputs)
         {
             if (inputValues.Count != Inputs.Count) {
                 throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, Inputs.Count));
@@ -160,7 +165,7 @@ namespace NeuralNetwork
                 delta += (results[i] - expectedOutputs[i]);
             }
             if (totalError == 0.0f) {
-                return;
+                return new NetworkData(results);
             }
 
             //Calculate errors
@@ -186,19 +191,21 @@ namespace NeuralNetwork
             foreach (Connection connection in Connections) {
                 connection.Weight = connection.Weight + (learningRate * errors[connection.Out] * connection.In.Output.Value);
             }
+
+            return new NetworkData(results);
         }
 
-        public Output Process(Input input)
+        public NetworkData Process(NetworkData input)
         {
             return Process(input.RawValues);
         }
 
-        public Output Process(float input)
+        public NetworkData Process(float input)
         {
             return Process(new List<float>() { input });
         }
 
-        public Output Process(List<float> inputValues)
+        public NetworkData Process(List<float> inputValues)
         {
             if (inputValues.Count != Inputs.Count) {
                 throw new ArgumentException(string.Format("Invalid number of input values, {0} was given while {1} expected", inputValues.Count, Inputs.Count));
@@ -225,7 +232,7 @@ namespace NeuralNetwork
                 result.Add(neuron.Output.Value);
             }
 
-            return new Output(result);
+            return new NetworkData(result);
         }
 
         public static void Save(Network network, string file)

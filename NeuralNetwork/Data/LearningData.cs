@@ -2,10 +2,10 @@
 {
     public class LearningData
     {
-        public Input Input { get; set; }
-        public Output ExpectedOutput { get; set; }
+        public NetworkData Input { get; set; }
+        public NetworkData ExpectedOutput { get; set; }
 
-        public LearningData(Input input, Output expectedOutput)
+        public LearningData(NetworkData input, NetworkData expectedOutput)
         {
             Input = input;
             ExpectedOutput = expectedOutput;

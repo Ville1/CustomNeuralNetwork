@@ -26,9 +26,9 @@ namespace CustomNeuralNetwork
 
             for(int i = 0; i < APLHABET.Length; i++) {
                 if(i == APLHABET.Length - 1) {
-                    learningData.Add(new LearningData(new Input(APLHABET[i]), new Output(APLHABET[0])));
+                    learningData.Add(new LearningData(new NetworkData(APLHABET[i]), new NetworkData(APLHABET[0])));
                 } else {
-                    learningData.Add(new LearningData(new Input(APLHABET[i]), new Output(APLHABET[i + 1])));
+                    learningData.Add(new LearningData(new NetworkData(APLHABET[i]), new NetworkData(APLHABET[i + 1])));
                 }
             }
 
@@ -64,7 +64,7 @@ namespace CustomNeuralNetwork
             while (running) {
                 char keyChar = Console.ReadKey(true).KeyChar.ToString().ToLower()[0];
                 if (APLHABET.Contains(keyChar)) {
-                    Output output = network.Process(new Input(keyChar));
+                    NetworkData output = network.Process(new NetworkData(keyChar));
                     Console.WriteLine(string.Format("{0} -> {1}", keyChar, output.ParseChar()));
                 } else {
                     running = false;
