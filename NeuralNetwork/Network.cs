@@ -29,6 +29,22 @@ namespace NeuralNetwork
 
         public Network(int inputCount, int hiddenWidth, int layers, int outputCount, float learningRate, ActivationFunctionType activationFunctionType)
         {
+            if(inputCount <= 0) {
+                throw new ArgumentException("Invalid argument inputCount");
+            }
+            if (hiddenWidth <= 0) {
+                throw new ArgumentException("Invalid argument hiddenWidth");
+            }
+            if (layers <= 0) {
+                throw new ArgumentException("Invalid argument layers");
+            }
+            if (outputCount <= 0) {
+                throw new ArgumentException("Invalid argument inputCount");
+            }
+            if (learningRate <= 0.0f) {
+                throw new ArgumentException("Invalid argument learningRate");
+            }
+
             this.learningRate = learningRate;
             ActivationFunctionType = activationFunctionType;
             learningData = null;
