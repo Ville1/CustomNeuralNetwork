@@ -15,15 +15,13 @@ namespace NeuralNetwork
         public List<Neuron> Outputs { get; private set; }
         public List<Connection> Connections { get; private set; }
         public ActivationFunctionType ActivationFunctionType { get; private set; }
-        public long NeuronCurrentId { get { long value = neuronCurrentId; neuronCurrentId++; return value; } }
-        public long ConnectionCurrentId { get { long value = connectionCurrentId; connectionCurrentId++; return value; } }
+        public long NeuronCurrentId { get; set; }
+        public long ConnectionCurrentId { get; set; }
 
         private float learningRate;
         private List<LearningData> learningData;
         private int learningDataRepeats;
         private int learningDataCycle;
-        private long neuronCurrentId;
-        private long connectionCurrentId;
 
         private Network() { }
 
@@ -50,8 +48,8 @@ namespace NeuralNetwork
             learningData = null;
             learningDataRepeats = 0;
             learningDataCycle = 0;
-            neuronCurrentId = 0;
-            connectionCurrentId = 0;
+            NeuronCurrentId = 0;
+            ConnectionCurrentId = 0;
 
             Inputs = new List<Neuron>();
             Hidden = new List<List<Neuron>>();
@@ -255,6 +253,7 @@ namespace NeuralNetwork
         {
             NetworkSaveData data = new NetworkSaveData() {
                 ActivationFunctionType = (int)network.ActivationFunctionType,
+                LearningRate = network.learningRate,
                 NeuronCurrentId = network.NeuronCurrentId,
                 ConnectionCurrentId = network.ConnectionCurrentId,
                 Inputs = network.Inputs.Select(x => new NeuronSaveData() { Id = x.Id }).ToList(),
@@ -281,8 +280,9 @@ namespace NeuralNetwork
             }
             Network network = new Network();
             network.ActivationFunctionType = (ActivationFunctionType)data.ActivationFunctionType;
-            network.neuronCurrentId = data.NeuronCurrentId;
-            network.connectionCurrentId = data.ConnectionCurrentId;
+            network.learningRate = data.LearningRate;
+            network.NeuronCurrentId = data.NeuronCurrentId;
+            network.ConnectionCurrentId = data.ConnectionCurrentId;
             network.Inputs = data.Inputs.Select(x => new Neuron(network, x)).ToList();
             network.Hidden = data.Hidden.Select(x => x.Select(y => new Neuron(network, y)).ToList()).ToList();
             network.Outputs = data.Output.Select(x => new Neuron(network, x)).ToList();

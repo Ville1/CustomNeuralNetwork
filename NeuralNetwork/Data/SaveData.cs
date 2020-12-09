@@ -7,6 +7,7 @@ namespace NeuralNetwork.Data
     public class NetworkSaveData
     {
         public int ActivationFunctionType { get; set; }
+        public float LearningRate { get; set; }
         public long NeuronCurrentId { get; set; }
         public long ConnectionCurrentId { get; set; }
         public List<NeuronSaveData> Inputs { get; set; }

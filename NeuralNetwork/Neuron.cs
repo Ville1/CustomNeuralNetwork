@@ -28,6 +28,7 @@ namespace NeuralNetwork
         public Neuron(Network network)
         {
             Id = network.NeuronCurrentId;
+            network.NeuronCurrentId++;
             Connections = new List<Connection>();
             Output = null;
             Network = network;

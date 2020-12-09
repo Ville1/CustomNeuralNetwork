@@ -12,6 +12,7 @@ namespace NeuralNetwork
         public Connection(Neuron inP, Neuron outP, float weight)
         {
             Id = inP.Network.ConnectionCurrentId;
+            inP.Network.ConnectionCurrentId++;
             In = inP;
             Out = outP;
             In.Connections.Add(this);
